@@ -1,57 +1,39 @@
 node {
-   
-   stage('Code Checkout') { 
-     git credentialsId: 'githubID', url: 'https://github.com/itrainbatman/maven-examples.git'
+   def mvnHome
+   stage('code checkout') { 
+       git credentialsId: 'GitHub-ID', url: 'https://github.com/digitalorg/maven-examples'       
+   }
+   stage('build') {
+       withMaven(jdk: 'java-8', maven: 'Maven') {
+           sh 'mvn clean compile'
+        }
+      
+   }
+   stage('test') {
+       withMaven(jdk: 'java-8', maven: 'Maven') {
+           sh 'mvn test'
+      }
+      
+   }
+   stage('sonarqube analysis') {
+       withMaven(jdk: 'java-8', maven: 'Maven') {
+           sh 'mvn sonar:sonar -Dsonar.projectKey=Name -Dsonar.organization=digitalorg -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=abbceafed96e54d46c1efe75f4bf3ae4d860c837'
+      }
      
-    }
-   stage('Build') {
-    withMaven(jdk: 'JDK-1.8', maven: 'Maven-3.6.1') {
-      sh 'mvn clean compile'
-      }
-    }
-   stage('Unit Test run') {
-    withMaven(jdk: 'JDK-1.8', maven: 'Maven-3.6.1') {
-     sh 'mvn test'
-      } 
-    }
-   stage('Sonarqube analysis'){
-      def scannerHome = tool 'javascanner';
-   withSonarQubeEnv(credentialsId: 'ItrainSonar') {
-    withMaven(jdk: 'JDK-1.8', maven: 'Maven-3.6.1') {
-    sh 'mvn sonar:sonar' 
-      }
+   }  
+   stage('package') {
+       withMaven(jdk: 'java-8', maven: 'Maven') {
+           sh 'mvn package'
      }
-    }
-  stage("Quality Gate"){
-          timeout(time: 1, unit: 'HOURS') {
-              def qg = waitForQualityGate()
-              if (qg.status != 'OK') {
-                  error "Pipeline aborted due to quality gate failure: ${qg.status}"
-              }
-          }
-    }
-   stage('Package to Jfrog') {
-    withMaven(jdk: 'JDK-1.8', maven: 'Maven-3.6.1') {
-     sh 'mvn package'
-      }
-    }
-   
-   stage('Deploy to Dev') {
-     
-    }
-   stage('Automation Testing') {
-     
-    }
-   stage('Deploy to Test') {
-     
-    }
-   stage('Smoke Testing') {
-     
-    }
-   stage('Deploy to Prod') {
-     
-    }
-   stage('Acceptance Testing') {
-     
-    }
+      
+   }
+   stage('deploy to dev environment') {
+      
+   }
+   stage('deploy to QA environment') {
+      
+   }
+   stage('deploy to production environment') {
+      
+   }
 }
